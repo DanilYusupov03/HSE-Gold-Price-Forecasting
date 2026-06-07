@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 560" role="img" aria-label="Юсупов Данил">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f2d16b"/>
+      <stop offset="0.55" stop-color="#7c5a16"/>
+      <stop offset="1" stop-color="#10120d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="35%" cy="18%" r="70%">
+      <stop offset="0" stop-color="#fff1a6" stop-opacity=".9"/>
+      <stop offset=".45" stop-color="#d6aa3f" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="560" rx="56" fill="url(#bg)"/>
+  <rect width="480" height="560" rx="56" fill="url(#glow)"/>
+  <circle cx="240" cy="200" r="86" fill="#f4efe2" opacity=".92"/>
+  <path d="M118 448c23-83 74-126 122-126s99 43 122 126" fill="#f4efe2" opacity=".92"/>
+  <text x="240" y="510" text-anchor="middle" font-family="Verdana, sans-serif" font-size="52" font-weight="700" fill="#f2d16b">ДЮ</text>
+</svg>

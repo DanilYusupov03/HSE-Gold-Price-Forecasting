@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Price Forecasting | HSE AI/ML Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <div class="market-grid"></div>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#hero" aria-label="Gold Forecast home">
+      <span class="brand-mark">Au</span>
+      <span>Gold Forecast Lab</span>
+    </a>
+    <nav class="nav">
+      <a href="#data">Data</a>
+      <a href="#models">Models</a>
+      <a href="#forecast">Forecast</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="hero" class="hero section">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">НИУ ВШЭ · AI/ML · Financial Forecasting</p>
+        <h1>Прогнозирование цены золота на горизонте 30 дней</h1>
+        <p class="hero-subtitle">
+          Воспроизводимый ML-пайплайн: исторические данные Yahoo Finance, внешние рыночные факторы,
+          baseline, несколько моделей, интерпретация и локальное веб-приложение с live-данными.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#forecast">Смотреть прогноз</a>
+          <a class="button ghost" href="#models">Метрики моделей</a>
+        </div>
+        <div class="team-strip" aria-label="Команда проекта">
+          <button class="team-chip" type="button" data-member="danil">Юсупов Данил</button>
+          <button class="team-chip" type="button" data-member="pavel">Панчук Павел</button>
+          <button class="team-chip" type="button" data-member="evgeniy">Маликов Евгений</button>
+        </div>
+        <div class="team-preview" id="teamPreview" aria-live="polite">
+          <div class="team-photo-frame">
+            <img id="teamPhoto" src="/assets/team-danil.svg" alt="Юсупов Данил" />
+          </div>
+          <div class="team-preview-copy">
+            <span id="teamRole" class="team-role">ML Pipeline · Data</span>
+            <h3 id="teamName">Юсупов Данил</h3>
+            <p id="teamDescription">
+              Отвечает за структуру проекта, воспроизводимость пайплайна, подготовку данных и финальную сборку решения.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="terminal-card reveal delay-1" aria-label="Current gold market card">
+        <div class="terminal-header">
+          <span class="dot gold"></span>
+          <span class="dot green"></span>
+          <span class="dot slate"></span>
+          <span class="terminal-title">GC=F Live Monitor</span>
+        </div>
+        <div class="ticker-row">
+          <span class="ticker-label">Gold Futures</span>
+          <span id="liveSource" class="pill">loading</span>
+        </div>
+        <div id="currentPrice" class="live-price">$ --</div>
+        <div class="price-meta">
+          <span id="priceChange">change: --</span>
+          <span id="lastUpdated">updated: --</span>
+        </div>
+        <div class="mini-grid">
+          <div>
+            <span>Best ML model</span>
+            <strong id="bestModelHero">--</strong>
+          </div>
+          <div>
+            <span>Test MAE</span>
+            <strong id="testMaeHero">--</strong>
+          </div>
+          <div>
+            <span>Horizon</span>
+            <strong>30 days</strong>
+          </div>
+          <div>
+            <span>Refresh</span>
+            <strong>3 min</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="business" class="section two-column">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Business Problem</p>
+        <h2>Зачем прогнозировать золото</h2>
+      </div>
+      <div class="text-panel reveal delay-1">
+        <p>
+          Золото используется как защитный актив, индикатор рыночного стресса и инструмент хеджирования.
+          Для банков, инвесторов, аналитиков и риск-менеджеров краткосрочный прогноз помогает оценивать
+          сценарии, управлять портфелем и понимать связь золота с долларом, сырьевыми рынками и ставками.
+        </p>
+        <div class="insight-row">
+          <span>Тип задачи</span>
+          <strong>Регрессия временного ряда</strong>
+        </div>
+        <div class="insight-row">
+          <span>Цель</span>
+          <strong>Цена закрытия на следующий день</strong>
+        </div>
+        <div class="insight-row">
+          <span>Метрики</span>
+          <strong>MAE · RMSE · MAPE · R²</strong>
+        </div>
+      </div>
+    </section>
+
+    <section id="data" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Data & EDA</p>
+        <h2>Рыночные данные и разведочный анализ</h2>
+        <p>
+          Данные загружаются через yfinance и кешируются в CSV. Backend лендинга читает эти же артефакты,
+          поэтому визуализация синхронизирована с ноутбуком.
+        </p>
+      </div>
+
+      <div class="stats-grid reveal delay-1">
+        <article class="stat-card">
+          <span>Период</span>
+          <strong id="dataPeriod">--</strong>
+        </article>
+        <article class="stat-card">
+          <span>Last local close</span>
+          <strong id="lastLocalClose">--</strong>
+        </article>
+      </div>
+
+      <div class="market-data-grid reveal delay-2">
+        <article class="chart-card market-table-card">
+          <div class="card-title">
+            <h3>Market snapshot</h3>
+            <span>dynamic CSV/API table</span>
+          </div>
+          <div class="table-wrap compact embedded-table">
+            <table id="marketSnapshotTable">
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Last close</th>
+                  <th>1D change</th>
+                  <th>7D change</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="chart-card market-table-card">
+          <div class="card-title">
+            <h3>Latest observations</h3>
+            <span>not a screenshot</span>
+          </div>
+          <div class="table-wrap compact embedded-table">
+            <table id="marketRecentTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Gold</th>
+                  <th>USD</th>
+                  <th>S&P 500</th>
+                  <th>WTI</th>
+                  <th>Silver</th>
+                  <th>US 10Y</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Feature Engineering</p>
+        <h2>Признаки для временного ряда</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card reveal">
+          <span class="feature-index">01</span>
+          <h3>Лаги</h3>
+          <p>Значения золота за 1, 2, 3, 7, 14 и 30 дней назад.</p>
+        </article>
+        <article class="feature-card reveal delay-1">
+          <span class="feature-index">02</span>
+          <h3>Rolling means</h3>
+          <p>Скользящие средние 7, 14, 30 и 90 дней для локального тренда.</p>
+        </article>
+        <article class="feature-card reveal delay-2">
+          <span class="feature-index">03</span>
+          <h3>Volatility</h3>
+          <p>Историческая волатильность на окнах 7, 14 и 30 дней.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-index">04</span>
+          <h3>Calendar</h3>
+          <p>День недели, месяц, квартал, год, начало и конец месяца.</p>
+        </article>
+        <article class="feature-card reveal delay-1">
+          <span class="feature-index">05</span>
+          <h3>External markets</h3>
+          <p>Доллар, S&P 500, нефть WTI, серебро и доходность 10-летних облигаций.</p>
+        </article>
+        <article class="feature-card reveal delay-2">
+          <span class="feature-index">06</span>
+          <h3>Returns</h3>
+          <p>Доходности золота и внешних рынков для оценки краткосрочного импульса.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="models" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Models & Metrics</p>
+        <h2>Сравнение моделей</h2>
+        <p>
+          В финансовых временных рядах baseline особенно важен. Здесь naive forecast оказался очень сильным:
+          ML-модель почти повторяет его качество, но не превосходит на test.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="chart-card reveal">
+          <div class="card-title">
+            <h3>MAE validation/test</h3>
+            <span>lower is better</span>
+          </div>
+          <div id="metricsChart" class="plot"></div>
+        </article>
+        <article class="model-summary reveal delay-1">
+          <p class="eyebrow">Winner by validation MAE</p>
+          <h3 id="bestModelCard">--</h3>
+          <div class="metric-list">
+            <div><span>Validation MAE</span><strong id="validMaeCard">--</strong></div>
+            <div><span>Test MAE</span><strong id="testMaeCard">--</strong></div>
+            <div><span>Naive test MAE</span><strong id="naiveMaeCard">--</strong></div>
+            <div><span>Baseline note</span><strong id="baselineNote">--</strong></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="analytics-grid reveal delay-2">
+        <article class="insight-card analytics-card">
+          <div class="card-title">
+            <h3>Model vs Baseline</h3>
+            <span>test MAE</span>
+          </div>
+          <div class="compare-bars">
+            <div class="compare-row">
+              <div class="compare-label">
+                <span id="compareModelName">ML model</span>
+                <strong id="compareModelMae">--</strong>
+              </div>
+              <div class="bar-track"><span id="modelMaeBar" class="bar-fill model-fill"></span></div>
+            </div>
+            <div class="compare-row">
+              <div class="compare-label">
+                <span>Naive baseline</span>
+                <strong id="compareBaselineMae">--</strong>
+              </div>
+              <div class="bar-track"><span id="baselineMaeBar" class="bar-fill baseline-fill"></span></div>
+            </div>
+          </div>
+          <p id="compareInsight" class="analytics-note">--</p>
+        </article>
+
+        <article class="insight-card analytics-card">
+          <div class="card-title">
+            <h3>Risk meter</h3>
+            <span>30D volatility</span>
+          </div>
+          <div class="risk-meter">
+            <div id="riskNeedle" class="risk-needle"></div>
+            <div class="risk-scale">
+              <span>Low</span>
+              <span>Medium</span>
+              <span>High</span>
+            </div>
+          </div>
+          <div class="risk-summary">
+            <strong id="riskLevel">--</strong>
+            <span id="riskVolatility">--</span>
+          </div>
+          <p id="riskInsight" class="analytics-note">--</p>
+        </article>
+      </div>
+
+      <div class="table-wrap reveal">
+        <table id="modelTable">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>MAE valid</th>
+              <th>RMSE valid</th>
+              <th>MAPE valid</th>
+              <th>MAE test</th>
+              <th>RMSE test</th>
+              <th>MAPE test</th>
+              <th>Training time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="interpretation" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Results & Interpretation</p>
+        <h2>Что объясняет прогноз</h2>
+      </div>
+      <div class="dashboard-grid wide">
+        <article class="chart-card reveal">
+          <div class="card-title">
+            <h3>Top feature importance</h3>
+            <span>click a factor</span>
+          </div>
+          <div id="featureChart" class="plot"></div>
+        </article>
+        <article class="chart-card reveal delay-1">
+          <div class="card-title">
+            <h3>Actual vs predicted</h3>
+            <span>test period</span>
+          </div>
+          <div id="actualChart" class="plot"></div>
+        </article>
+      </div>
+      <div class="note-panel reveal">
+        <strong>Ключевой вывод:</strong>
+        текущая цена золота является главным фактором one-step прогноза. Среди внешних факторов заметны
+        индекс доллара, S&P 500, серебро и нефть. Деревья проиграли на test из-за слабой экстраполяции
+        в новый высокий ценовой диапазон.
+      </div>
+      <div class="feature-explainer reveal delay-1">
+        <div class="feature-list" id="featureList" aria-label="Feature importance selector"></div>
+        <article class="feature-explainer-card">
+          <p class="eyebrow">Feature explainer</p>
+          <h3 id="featureExplainerTitle">Выберите признак</h3>
+          <p id="featureExplainerText">
+            Нажмите на фактор слева, чтобы увидеть человеческое объяснение его роли в прогнозе цены золота.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="forecast" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">30-Day Forecast</p>
+        <h2>История и прогноз на 30 торговых дней</h2>
+      </div>
+      <article class="chart-card reveal">
+        <div class="card-title">
+          <h3>Historical close + forecast</h3>
+          <span id="forecastRange">--</span>
+        </div>
+        <div id="forecastChart" class="plot large"></div>
+      </article>
+
+      <div class="forecast-layout">
+        <div class="table-wrap compact forecast-table-scroll reveal">
+          <table id="forecastTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Predicted gold price</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="forecast-callout reveal delay-1">
+          <p class="eyebrow">Interpretation</p>
+          <h3 id="forecastHeadline">--</h3>
+          <p>
+            Прогноз строится итеративно. Будущие внешние факторы фиксируются на последнем известном уровне,
+            поэтому результат нужно рассматривать как учебный аналитический сценарий, а не инвестиционную рекомендацию.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="insights" class="section final-section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Final Insights</p>
+        <h2>Главные выводы</h2>
+      </div>
+      <div class="insight-grid">
+        <article class="insight-card reveal">
+          <h3>Baseline важен</h3>
+          <p>Naive forecast оказался почти оптимальным для краткосрочного one-step прогноза золота.</p>
+        </article>
+        <article class="insight-card reveal delay-1">
+          <h3>Интерпретируемость ценна</h3>
+          <p>Linear Regression дает прозрачную структуру факторов и стабильное качество на validation/test.</p>
+        </article>
+        <article class="insight-card reveal delay-2">
+          <h3>Что улучшать</h3>
+          <p>Больше макроэкономики, новости, sentiment analysis, rolling backtesting и регулярное переобучение.</p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span>HSE · Business-IT Architecture · AI/ML Project</span>
+    <span>Forecasting tomorrow, one golden signal at a time</span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

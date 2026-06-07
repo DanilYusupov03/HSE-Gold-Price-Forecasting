@@ -1,0 +1,71 @@
+{
+  "project": "Gold price forecasting",
+  "team": [
+    "Юсупов Данил",
+    "Панчук Павел",
+    "Маликов Евгений"
+  ],
+  "course": "Технологии искусственного интеллекта и продвинутой аналитики",
+  "best_model": "Linear Regression",
+  "created_at": "2026-06-04T13:40:27",
+  "data_start": "2010-01-04",
+  "data_end": "2026-06-03",
+  "rows": 4133,
+  "columns": [
+    "gold_close",
+    "usd_index_close",
+    "sp500_close",
+    "wti_oil_close",
+    "silver_close",
+    "us_10y_yield_close"
+  ],
+  "feature_count": 38,
+  "metrics": {
+    "Model": "Linear Regression",
+    "MAE valid": 12.942124447442025,
+    "RMSE valid": 17.195187638377526,
+    "MAPE valid": 0.6961248123256282,
+    "R2 valid": 0.9718998764928979,
+    "MAE test": 34.29324534618862,
+    "RMSE test": 55.51060480165174,
+    "MAPE test": 0.9740320756771152,
+    "R2 test": 0.9963516664224003,
+    "Training time": 0.00268416601466015,
+    "Validation training time": 0.01750995800830424,
+    "Best params": "{}"
+  },
+  "baseline_test": [
+    {
+      "Model": "Naive forecast",
+      "Split": "test",
+      "MAE": 33.72158154859967,
+      "RMSE": 55.58793540423657,
+      "MAPE": 0.9608861851381931,
+      "R2": 0.9963414945156795
+    },
+    {
+      "Model": "MA 7 baseline",
+      "Split": "test",
+      "MAE": 57.58554798969243,
+      "RMSE": 86.36033145416975,
+      "MAPE": 1.6343266594944765,
+      "R2": 0.9911697861170358
+    },
+    {
+      "Model": "MA 14 baseline",
+      "Split": "test",
+      "MAE": 73.65025068513364,
+      "RMSE": 111.03332976911402,
+      "MAPE": 2.1085252638876293,
+      "R2": 0.9854034792122272
+    },
+    {
+      "Model": "MA 30 baseline",
+      "Split": "test",
+      "MAE": 103.13668544712728,
+      "RMSE": 152.43140806906092,
+      "MAPE": 2.9495931501788895,
+      "R2": 0.972489939540332
+    }
+  ]
+}
