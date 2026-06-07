@@ -163,8 +163,8 @@ PORT=8765 node landing/app.js
 .
 ├── gold_price_forecasting.ipynb
 ├── README.md
-├── report.md
 ├── requirements.txt
+├── run_landing.sh
 ├── data/
 │   ├── gold_market_data.csv
 │   ├── baseline_results.csv
